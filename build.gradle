@@ -1,0 +1,41 @@
+buildscript {
+    ext.kotlinVersion = "1.3.21"
+    ext.droolsVersion = "6.3.0.Final"
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}"
+    }
+}
+
+plugins {
+    id "org.jetbrains.kotlin.jvm" version "1.3.21"
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+
+group 'com.strumenta'
+version '0.1.0-SNAPSHOT'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url 'https://repository.jboss.org/nexus/content/groups/public/'
+    }
+}
+
+dependencies {
+    compile "org.kie:kie-api:${droolsVersion}"
+    compile "org.drools:drools-compiler:${droolsVersion}"
+    compile "ch.qos.logback:logback-classic:1.1.+"
+    compile "org.slf4j:slf4j-api:1.7.+"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit"
+}
