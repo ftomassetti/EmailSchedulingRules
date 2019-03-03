@@ -1,13 +1,8 @@
-package com.sample
-
-import java.math.BigDecimal
+package com.strumenta.funnel
 
 import org.drools.KnowledgeBase
 import org.drools.KnowledgeBaseFactory
 
-import org.drools.builder.KnowledgeBuilder
-import org.drools.builder.KnowledgeBuilderError
-import org.drools.builder.KnowledgeBuilderErrors
 import org.drools.builder.KnowledgeBuilderFactory
 import org.drools.builder.ResourceType
 
@@ -23,64 +18,99 @@ import org.drools.runtime.StatefulKnowledgeSession
 //import org.kie.internal.builder.KnowledgeBuilderFactory
 //import org.kie.internal.runtime.StatefulKnowledgeSession
 
-import com.sun.javafx.css.StyleManager.getErrors
-import org.kie.api.io.ResourceType.DRL
-import org.kie.internal.persistence.jpa.JPAKnowledgeService.newStatefulKnowledgeSession
+import java.io.File
+import java.time.LocalDate
+import java.time.Month
 
-data class Team(val name: String, val lastYearRank: Int, val city: String, val stadium: String)
+data class Product(val name: String, val price: Float)
+data class Purchase(val product: Product, val price: Float, val date: LocalDate)
+data class Person(val name: String,
+                  val subscriptionDate: LocalDate,
+                  val country: String,
+                  val email: String = "$name@foo.com",
+                  val tags: List<String> = emptyList(),
+                  val purchases: List<Purchase> = emptyList(),
+                  val emailReceived: List<EmailSending> = emptyList()) {
+    fun isInSequence(emailSequence: EmailSequence) = hasReceived(emailSequence.first) && !hasReceived(emailSequence.last)
+    fun hasReceived(email: Email) = emailReceived.any { it.email == email }
+}
+data class Email(val title: String, val content: String, val tags: List<String> = emptyList())
+data class EmailSequence(val title: String, val emails: List<Email>, val tags: List<String> = emptyList()) {
+    val first = emails.first()
+    val last = emails.last()
+
+    init {
+        require(emails.isNotEmpty())
+    }
+}
+data class EmailSending(val importance: Double, val email: Email, val client: Person, val date: LocalDate,
+                        val timeSensitive: Boolean, val blocked: Boolean)
+
+class EmailScheduler {
+
+}
+
+fun loadDataIntoSession(ksession: StatefulKnowledgeSession) : EmailScheduler {
+    val products = listOf(
+            Product("My book", 20.0f),
+            Product("Video course", 100.0f),
+            Product("Consulting package", 500.0f)
+    )
+    val persons = listOf(
+            Person("Mario", LocalDate.of(2019, Month.JANUARY, 1), "Italy"),
+            Person("Amelie", LocalDate.of(2019, Month.FEBRUARY, 1), "France"),
+            Person("Eric", LocalDate.of(2018, Month.OCTOBER, 1), "USA")
+    )
+    val sequences = listOf(
+            EmailSequence("Present book",
+                    listOf(
+                            Email("Present book 1", "Here is the book..."),
+                            Email("Present book 2", "Here is the book..."),
+                            Email("Present book 3", "Here is the book...")
+                    ))
+    )
+    val suggestBook = Email("Suggest book", "I wrote a book...")
+    val suggestVideoCourse = Email("Suggest video course", "I recorded a videoCourse...")
+    val suggestConsulting = Email("Suggest consulting", "I sell consulting...")
+    val emailScheduler = EmailScheduler()
+
+    //val interestingTopic = Email("")
+    products.forEach {
+        ksession.insert(it)
+    }
+    persons.forEach {
+        ksession.insert(it)
+    }
+    sequences.forEach {
+        ksession.insert(it)
+    }
+    ksession.insert(emailScheduler)
+    return emailScheduler
+}
+
+fun showSending(emailScheduler: EmailScheduler) {
+    println("Showing email scheduling")
+}
+
+// Rules:
+// Send certain emails only after sending x emails with interesting stuff
+// Send certain emails on certain week days
+// Send certain emails with certain interval
+// Never re-send the same email
+// Do not send certain emails to people who bought something
+// Send certain emails to people who bought something
+// Rules regarding a certain sequence
+// Rules for emails that have to be sent within a certain date
 
 fun main(args: Array<String>) {
     try {
-
-        // load up the knowledge base
         val kbase = readKnowledgeBase()
         val ksession = kbase.newStatefulKnowledgeSession()
-
-
-        val teams = listOf(
-                Team("Torino", 7, "Torino", "Grande Torino"),
-                Team("Inter", 3, "Milano", "Meazza"),
-                Team("Milan", 4, "Milano", "Meazza"))
-
-        teams.forEach { ksession.insert(it) }
-
-//            val item1 = ItemCity()
-//            item1.setPurchaseCity(City.PUNE)
-//            item1.setTypeofItem(Type.MEDICINES)
-//            item1.setSellPrice(BigDecimal(10))
-//            ksession.insert(item1)
-//
-//            val item2 = ItemCity()
-//            item2.setPurchaseCity(City.PUNE)
-//            item2.setTypeofItem(Type.GROCERIES)
-//            item2.setSellPrice(BigDecimal(10))
-//            ksession.insert(item2)
-//
-//            val item3 = ItemCity()
-//            item3.setPurchaseCity(City.NAGPUR)
-//            item3.setTypeofItem(Type.MEDICINES)
-//            item3.setSellPrice(BigDecimal(10))
-//            ksession.insert(item3)
-//
-//            val item4 = ItemCity()
-//            item4.setPurchaseCity(City.NAGPUR)
-//            item4.setTypeofItem(Type.GROCERIES)
-//            item4.setSellPrice(BigDecimal(10))
-//            ksession.insert(item4)
+        val emailScheduler = loadDataIntoSession(ksession)
 
         ksession.fireAllRules()
 
-//            println(item1.getPurchaseCity().toString() + " "
-//                    + item1.getLocalTax().intValue())
-//
-//            println(item2.getPurchaseCity().toString() + " "
-//                    + item2.getLocalTax().intValue())
-//
-//            println(item3.getPurchaseCity().toString() + " "
-//                    + item3.getLocalTax().intValue())
-//
-//            println(item4.getPurchaseCity().toString() + " "
-//                    + item4.getLocalTax().intValue())
+        showSending(emailScheduler)
 
     } catch (t: Throwable) {
         t.printStackTrace()
@@ -91,6 +121,9 @@ fun main(args: Array<String>) {
 private fun readKnowledgeBase(): KnowledgeBase {
 
     val kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder()
+
+    kbuilder.add(ResourceFactory.newFileResource(File("rules/generic.drl")), ResourceType.DRL)
+    //kbuilder.add(ResourceFactory.newFileResource(File("rules/book.drl")), ResourceType.DRL)
 
 //        kbuilder.add(ResourceFactory.newClassPathResource("Pune.drl"), ResourceType.DRL)
 //        kbuilder.add(ResourceFactory.newClassPathResource("Nagpur.drl"), ResourceType.DRL)

@@ -1,0 +1,27 @@
+package com.strumenta.funnellang
+
+import com.strumenta.funnel.Email;
+import com.strumenta.funnel.EmailSequence;
+import com.strumenta.funnel.Person;
+
+dialect "java"
+rule "Continue sequence"
+
+   when
+      sequence : EmailSequence ()
+      person : Person ( isInSequence(sequence) )
+
+   then
+      System.out.println("Is sequence");
+end
+
+dialect "java"
+rule "Start sequence"
+
+   when
+      sequence : EmailSequence ()
+      person : Person ( !isInSequence(sequence) )
+
+   then
+      System.out.println("Start sequence " + sequence.getTitle() + " for " + person.getName());
+end

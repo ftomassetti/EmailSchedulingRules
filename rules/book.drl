@@ -1,0 +1,17 @@
+package com.strumenta.funnellang
+
+import com.sample.ItemCity;
+import java.math.BigDecimal;
+
+dialect "java"
+rule "Send book em"
+
+   when
+      item : ItemCity (purchaseCity == ItemCity.City.PUNE,
+                       typeofItem == ItemCity.Type.MEDICINES)
+
+   then
+      BigDecimal tax = new BigDecimal(0.0);
+      item.setLocalTax(tax.multiply(item.getSellPrice()));
+end
+
