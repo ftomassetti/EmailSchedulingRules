@@ -9,18 +9,11 @@ import org.drools.builder.ResourceType
 import org.drools.io.ResourceFactory
 import org.drools.runtime.StatefulKnowledgeSession
 
-//import com.sample.ItemCity.City
-//import com.sample.ItemCity.Type
-//import org.kie.internal.KnowledgeBaseFactory
-//import org.kie.internal.builder.KnowledgeBuilder
-//import org.kie.internal.builder.KnowledgeBuilderError
-//import org.kie.internal.builder.KnowledgeBuilderErrors
-//import org.kie.internal.builder.KnowledgeBuilderFactory
-//import org.kie.internal.runtime.StatefulKnowledgeSession
-
 import java.io.File
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
+import java.util.*
 
 data class Product(val name: String, val price: Float)
 data class Purchase(val product: Product, val price: Float, val date: LocalDate)
@@ -33,6 +26,13 @@ data class Person(val name: String,
                   val emailReceived: List<EmailSending> = emptyList()) {
     fun isInSequence(emailSequence: EmailSequence) = hasReceived(emailSequence.first) && !hasReceived(emailSequence.last)
     fun hasReceived(email: Email) = emailReceived.any { it.email == email }
+    fun hasReceivedEmailsInLastDays(nDays: Long) : Boolean {
+        val today = LocalDate.now()
+        return emailReceived.any { it.date.isAfter(today.minusDays(nDays)) }
+    }
+    fun isOnHolidays(date: LocalDate) : Boolean {
+        return date.dayOfWeek == DayOfWeek.SATURDAY || date.dayOfWeek == DayOfWeek.SUNDAY
+    }
 }
 data class Email(val title: String, val content: String, val tags: List<String> = emptyList())
 data class EmailSequence(val title: String, val emails: List<Email>, val tags: List<String> = emptyList()) {
@@ -43,11 +43,24 @@ data class EmailSequence(val title: String, val emails: List<Email>, val tags: L
         require(emails.isNotEmpty())
     }
 }
-data class EmailSending(val importance: Double, val email: Email, val client: Person, val date: LocalDate,
-                        val timeSensitive: Boolean, val blocked: Boolean)
+data class EmailSending(val email: Email, val person: Person, val date: LocalDate)
+data class EmailScheduling(val sending: EmailSending, val importance: Double,
+                           val timeSensitive: Boolean = false,
+                           var blocked: Boolean = false)
 
-class EmailScheduler {
-
+class EmailScheduler(val ksession: StatefulKnowledgeSession) {
+    @JvmOverloads
+    fun schedule(email: Email, person: Person, date: LocalDate, importance: Double,
+                 timeSensitive: Boolean = false) {
+        val scheduling = EmailScheduling(EmailSending(email, person, date), importance, timeSensitive)
+        ksession.insert(scheduling)
+        println("Scheduling ${email.title} for ${person.name}")
+        //System.out.println("Start sequence " + sequence.getTitle() + " for " + person.getName());
+    }
+    fun block(scheduling: EmailScheduling) {
+        println("Blocking ${scheduling.sending.email.title} for ${scheduling.sending.person.name}")
+        scheduling.blocked = true
+    }
 }
 
 fun loadDataIntoSession(ksession: StatefulKnowledgeSession) : EmailScheduler {
@@ -72,7 +85,8 @@ fun loadDataIntoSession(ksession: StatefulKnowledgeSession) : EmailScheduler {
     val suggestBook = Email("Suggest book", "I wrote a book...")
     val suggestVideoCourse = Email("Suggest video course", "I recorded a videoCourse...")
     val suggestConsulting = Email("Suggest consulting", "I sell consulting...")
-    val emailScheduler = EmailScheduler()
+    val emailScheduler = EmailScheduler(ksession)
+    ksession.setGlobal("scheduler", emailScheduler)
 
     //val interestingTopic = Email("")
     products.forEach {
@@ -84,7 +98,6 @@ fun loadDataIntoSession(ksession: StatefulKnowledgeSession) : EmailScheduler {
     sequences.forEach {
         ksession.insert(it)
     }
-    ksession.insert(emailScheduler)
     return emailScheduler
 }
 

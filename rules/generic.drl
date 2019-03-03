@@ -2,7 +2,11 @@ package com.strumenta.funnellang
 
 import com.strumenta.funnel.Email;
 import com.strumenta.funnel.EmailSequence;
-import com.strumenta.funnel.Person;
+import com.strumenta.funnel.EmailScheduling
+import com.strumenta.funnel.Person
+import java.time.LocalDate;
+
+global com.strumenta.funnel.EmailScheduler scheduler;
 
 dialect "java"
 rule "Continue sequence"
@@ -12,7 +16,7 @@ rule "Continue sequence"
       person : Person ( isInSequence(sequence) )
 
    then
-      System.out.println("Is sequence");
+      scheduler.schedule(sequence.getFirst(), person, LocalDate.now(), 4.0f, true);
 end
 
 dialect "java"
@@ -23,5 +27,26 @@ rule "Start sequence"
       person : Person ( !isInSequence(sequence) )
 
    then
-      System.out.println("Start sequence " + sequence.getTitle() + " for " + person.getName());
+      scheduler.schedule(sequence.getFirst(), person, LocalDate.now(), 2.0f);
 end
+
+dialect "java"
+rule "Prevent overloading"
+
+   when
+      scheduling : EmailScheduling( sending.person.hasReceivedEmailsInLastDays(3) )
+
+   then
+      scheduler.block(scheduling);
+end
+
+dialect "java"
+rule "Block on holidays"
+
+   when
+      scheduling : EmailScheduling( sending.person.isOnHolidays(scheduling.sending.date) )
+
+   then
+      scheduler.block(scheduling);
+end
+
