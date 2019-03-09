@@ -11,7 +11,6 @@ class EmailScheduler(val ksession: StatefulKnowledgeSession) {
         val scheduling = EmailScheduling(EmailSending(email, person, date), importance, timeSensitive)
         ksession.insert(scheduling)
         println("Scheduling ${email.title} for ${person.name}")
-        //System.out.println("Start sequence " + sequence.getTitle() + " for " + person.getName());
     }
 
     fun block(scheduling: EmailScheduling) {

@@ -3,10 +3,12 @@ package com.strumenta.funnellang
 import com.strumenta.funnel.Email;
 import com.strumenta.funnel.EmailSequence;
 import com.strumenta.funnel.EmailScheduling
+import com.strumenta.funnel.EmailScheduler;
 import com.strumenta.funnel.Person
 import java.time.LocalDate;
 
-global com.strumenta.funnel.EmailScheduler scheduler;
+global EmailScheduler scheduler;
+global LocalDate day;
 
 // Rules:
 // Send certain emails only after sending x emails with interesting stuff
@@ -26,7 +28,7 @@ rule "Continue sequence"
       person : Person ( isInSequence(sequence) )
 
    then
-      scheduler.schedule(sequence.getFirst(), person, LocalDate.now(), 4.0f, true);
+      scheduler.schedule(sequence.getFirst(), person, day, 4.0f, true);
 end
 
 dialect "java"
@@ -37,30 +39,30 @@ rule "Start sequence"
       person : Person ( !isInSequence(sequence) )
 
    then
-      scheduler.schedule(sequence.getFirst(), person, LocalDate.now(), 2.0f);
+      scheduler.schedule(sequence.getFirst(), person, day, 2.0f);
 end
 
 dialect "java"
 rule "Prevent overloading"
 
    when
-      scheduling : EmailScheduling( sending.person.hasReceivedEmailsInLastDays(3), !blocked )
+      scheduling : EmailScheduling( sending.person.hasReceivedEmailsInLastDays(3, day), !blocked )
 
    then
       System.out.println("[Prevent overloading]");
       scheduler.block(scheduling);
 end
 
-//dialect "java"
-//rule "Block on holidays"
-//
-//   when
-//      scheduling : EmailScheduling( sending.person.isOnHolidays(scheduling.sending.date), !blocked )
-//
-//   then
-//      System.out.println("[Block on holidays]");
-//      scheduler.block(scheduling);
-//end
+dialect "java"
+rule "Block on holidays"
+
+   when
+      scheduling : EmailScheduling( sending.person.isOnHolidays(scheduling.sending.date), !blocked )
+
+   then
+      System.out.println("[Block on holidays]");
+      scheduler.block(scheduling);
+end
 
 dialect "java"
 rule "Precedence to time sensitive emails"
@@ -117,7 +119,8 @@ rule "Never resend same email"
 
   when
      scheduling : EmailScheduling( !blocked )
-     person : Person ( this = scheduling.sending.person, hasReceived(scheduling.sending.email))
+     person : Person( this == scheduling.sending.person,
+            hasReceived(scheduling.sending.email) )
    then
       scheduling.setBlocked(true);
 end

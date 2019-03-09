@@ -40,7 +40,10 @@ fun main(args: Array<String>) {
     try {
         val kbase = readKnowledgeBase(listOf(File("rules/generic.drl")))
         val ksession = kbase.newStatefulKnowledgeSession()
-        val emailScheduler = loadDataIntoSession(ksession)
+        // typically we want to consider today but we may decide to schedule
+        // emails in the future or we may want to run tests using a different date
+        val dayToConsider = LocalDate.now()
+        val emailScheduler = loadDataIntoSession(ksession, dayToConsider)
 
         ksession.fireAllRules()
 
@@ -48,5 +51,4 @@ fun main(args: Array<String>) {
     } catch (t: Throwable) {
         t.printStackTrace()
     }
-
 }

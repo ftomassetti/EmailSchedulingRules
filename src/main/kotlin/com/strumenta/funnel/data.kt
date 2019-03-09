@@ -4,7 +4,7 @@ import org.drools.runtime.StatefulKnowledgeSession
 import java.time.LocalDate
 import java.time.Month
 
-fun loadDataIntoSession(ksession: StatefulKnowledgeSession) : EmailScheduler {
+fun loadDataIntoSession(ksession: StatefulKnowledgeSession, dayToConsider: LocalDate) : EmailScheduler {
     val products = listOf(
             Product("My book", 20.0f),
             Product("Video course", 100.0f),
@@ -42,6 +42,7 @@ fun loadDataIntoSession(ksession: StatefulKnowledgeSession) : EmailScheduler {
 
     val emailScheduler = EmailScheduler(ksession)
     ksession.setGlobal("scheduler", emailScheduler)
+    ksession.setGlobal("day", dayToConsider)
 
     ksession.insert(products)
     persons.forEach {

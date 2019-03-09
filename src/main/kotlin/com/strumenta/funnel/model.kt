@@ -14,9 +14,8 @@ data class Person(val name: String,
                   val emailReceived: List<EmailSending> = emptyList()) {
     fun isInSequence(emailSequence: EmailSequence) = hasReceived(emailSequence.first) && !hasReceived(emailSequence.last)
     fun hasReceived(email: Email) = emailReceived.any { it.email == email }
-    fun hasReceivedEmailsInLastDays(nDays: Long) : Boolean {
-        val today = LocalDate.now()
-        return emailReceived.any { it.date.isAfter(today.minusDays(nDays)) }
+    fun hasReceivedEmailsInLastDays(nDays: Long, day: LocalDate) : Boolean {
+        return emailReceived.any { it.date.isAfter(day.minusDays(nDays)) }
     }
     fun isOnHolidays(date: LocalDate) : Boolean {
         return date.dayOfWeek == DayOfWeek.SATURDAY || date.dayOfWeek == DayOfWeek.SUNDAY
