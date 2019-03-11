@@ -11,11 +11,11 @@ fun loadDataIntoSession(ksession: StatefulKnowledgeSession, dayToConsider: Local
             Product("Consulting package", 500.0f)
     )
     val persons = listOf(
-            Person("Mario", LocalDate.of(2019, Month.JANUARY, 1), "Italy"),
-            Person("Amelie", LocalDate.of(2019, Month.FEBRUARY, 1), "France"),
-            Person("Bernd", LocalDate.of(2019, Month.APRIL, 18), "Germany"),
-            Person("Eric", LocalDate.of(2018, Month.OCTOBER, 1), "USA"),
-            Person("Albert", LocalDate.of(2016, Month.OCTOBER, 12), "USA")
+            Subscriber("Mario", LocalDate.of(2019, Month.JANUARY, 1), "Italy"),
+            Subscriber("Amelie", LocalDate.of(2019, Month.FEBRUARY, 1), "France"),
+            Subscriber("Bernd", LocalDate.of(2019, Month.APRIL, 18), "Germany"),
+            Subscriber("Eric", LocalDate.of(2018, Month.OCTOBER, 1), "USA"),
+            Subscriber("Albert", LocalDate.of(2016, Month.OCTOBER, 12), "USA")
     )
     val sequences = listOf(
             EmailSequence("Present book",

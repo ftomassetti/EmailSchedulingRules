@@ -6,25 +6,25 @@ import java.time.LocalDate
 class EmailScheduler(val ksession: StatefulKnowledgeSession) {
 
     @JvmOverloads
-    fun schedule(email: Email, person: Person, date: LocalDate, importance: Double,
+    fun schedule(email: Email, subscriber: Subscriber, date: LocalDate, importance: Double,
                  timeSensitive: Boolean = false) {
-        val scheduling = EmailScheduling(EmailSending(email, person, date), importance, timeSensitive)
+        val scheduling = EmailScheduling(EmailSending(email, subscriber, date), importance, timeSensitive)
         ksession.insert(scheduling)
-        println("Scheduling ${email.title} for ${person.name}")
+        println("Scheduling ${email.title} for ${subscriber.name}")
     }
 
     fun block(scheduling: EmailScheduling) {
-        println("Blocking ${scheduling.sending.email.title} for ${scheduling.sending.person.name}")
+        println("Blocking ${scheduling.sending.email.title} for ${scheduling.sending.subscriber.name}")
         scheduling.blocked = true
     }
 
     fun selectScheduling(localDate: LocalDate): List<EmailScheduling> {
-        // We select all the scheduling that were not blocked and at most one for each person per day
+        // We select all the scheduling that were not blocked and at most one for each subscriber per day
         // We do that just for the day considered (typically today) as things could change, so the scheduling
         // should always be redone
         val schedulings = ksession.objects.filterIsInstance(EmailScheduling::class.java)
         return schedulings.filter { !it.blocked }
-//        val schedulingsByPerson = schedulings.groupBy { it.sending.person }
+//        val schedulingsByPerson = schedulings.groupBy { it.sending.subscriber }
 //        return schedulingsByPerson.keys.map {
 //            val possibleSchedulings = schedulingsByPerson[it]!!.filter { !it.blocked }
 //            if (possibleSchedulings.isEmpty()) {

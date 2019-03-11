@@ -5,13 +5,13 @@ import java.time.LocalDate
 
 data class Product(val name: String, val price: Float)
 data class Purchase(val product: Product, val price: Float, val date: LocalDate)
-data class Person(val name: String,
-                  val subscriptionDate: LocalDate,
-                  val country: String,
-                  val email: String = "$name@foo.com",
-                  val tags: List<String> = emptyList(),
-                  val purchases: List<Purchase> = emptyList(),
-                  val emailReceived: List<EmailSending> = emptyList()) {
+data class Subscriber(val name: String,
+                      val subscriptionDate: LocalDate,
+                      val country: String,
+                      val email: String = "$name@foo.com",
+                      val tags: List<String> = emptyList(),
+                      val purchases: List<Purchase> = emptyList(),
+                      val emailReceived: List<EmailSending> = emptyList()) {
     fun isInSequence(emailSequence: EmailSequence) = hasReceived(emailSequence.first) && !hasReceived(emailSequence.last)
     fun hasReceived(email: Email) = emailReceived.any { it.email == email }
     fun hasReceivedEmailsInLastDays(nDays: Long, day: LocalDate) : Boolean {
@@ -33,7 +33,7 @@ data class EmailSequence(val title: String, val emails: List<Email>, val tags: L
         require(emails.isNotEmpty())
     }
 }
-data class EmailSending(val email: Email, val person: Person, val date: LocalDate)
+data class EmailSending(val email: Email, val subscriber: Subscriber, val date: LocalDate)
 data class EmailScheduling(val sending: EmailSending, val importance: Double,
                            val timeSensitive: Boolean = false,
                            var blocked: Boolean = false) {

@@ -1,6 +1,6 @@
 package com.strumenta.funnellang
 
-import com.strumenta.funnel.Person;
+import com.strumenta.funnel.Subscriber;
 import com.strumenta.funnel.EmailScheduling;
 import java.time.DayOfWeek;
 
@@ -8,12 +8,12 @@ dialect "java"
 rule "Send book offer only after at least 3 book presentation emails"
 
    when
-      person : Person (
+      subscriber : Subscriber (
           emailReceivedWithTag("book_explanation") < 3
       )
       scheduling : EmailScheduling(
         !blocked,
-        sending.person = person,
+        sending.subscriber = subscriber,
         sending.email.tags contains "book_offer"
       )
    then
@@ -36,12 +36,12 @@ dialect "java"
 rule "Block book offers for people who bought"
 
    when
-      person : Person (
+      subscriber : Subscriber (
           tags contains "book_bought"
       )
       scheduling : EmailScheduling(
         !blocked,
-        sending.person = person,
+        sending.subscriber = subscriber,
         sending.email.tags contains "book_offer"
       )
    then
