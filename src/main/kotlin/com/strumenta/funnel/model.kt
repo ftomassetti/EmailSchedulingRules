@@ -30,10 +30,12 @@ data class Subscriber(val name: String,
             it.date.isAfter(day.minusDays(nDays))
         }
     }
+
     fun isOnHolidays(date: LocalDate) : Boolean {
         return date.dayOfWeek == DayOfWeek.SATURDAY
                 || date.dayOfWeek == DayOfWeek.SUNDAY
     }
+    
     fun emailReceivedWithTag(tag: String) =
             emailsReceived.count { tag in it.email.tags }
 }
