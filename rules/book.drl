@@ -6,7 +6,6 @@ import com.strumenta.funnel.EmailScheduling;
 import java.time.DayOfWeek;
 
 rule "Send book offer only after at least 3 book presentation emails"
-
    when
       subscriber : Subscriber (
           emailReceivedWithTag("book_explanation") < 3
@@ -21,7 +20,6 @@ rule "Send book offer only after at least 3 book presentation emails"
 end
 
 rule "Block book offers on monday"
-
    when
       scheduling : EmailScheduling(
         !blocked,
@@ -32,7 +30,6 @@ rule "Block book offers on monday"
 end
 
 rule "Block book offers for people who bought"
-
    when
       subscriber : Subscriber (
           tags contains "book_bought"

@@ -22,7 +22,6 @@ global LocalDate day;
 // Rules for emails that have to be sent within a certain date
 
 rule "Continue sequence"
-
    when
       sequence : EmailSequence ()
       subscriber : Subscriber ( isInSequence(sequence) )
@@ -32,7 +31,6 @@ rule "Continue sequence"
 end
 
 rule "Start sequence"
-
    when
       sequence : EmailSequence ()
       subscriber : Subscriber ( !isInSequence(sequence) )
@@ -42,7 +40,6 @@ rule "Start sequence"
 end
 
 rule "Prevent overloading"
-
    when
       scheduling : EmailScheduling( sending.subscriber.hasReceivedEmailsInLastDays(3, day), !blocked )
 
@@ -52,7 +49,6 @@ rule "Prevent overloading"
 end
 
 rule "Block on holidays"
-
    when
       scheduling : EmailScheduling( sending.subscriber.isOnHolidays(scheduling.sending.date), !blocked )
 
@@ -62,7 +58,6 @@ rule "Block on holidays"
 end
 
 rule "Precedence to time sensitive emails"
-
    when
       scheduling1 : EmailScheduling( timeSensitive == true, !blocked )
       scheduling2 : EmailScheduling( this != scheduling1,
@@ -76,7 +71,6 @@ rule "Precedence to time sensitive emails"
 end
 
 rule "Precedence to higher priority emails"
-
   when
      scheduling1 : EmailScheduling( !blocked )
      scheduling2 : EmailScheduling( this != scheduling1,
@@ -92,7 +86,6 @@ rule "Precedence to higher priority emails"
 end
 
 rule "Limit to one email per day"
-
   when
      scheduling1 : EmailScheduling( blocked == false )
      scheduling2 : EmailScheduling( this != scheduling1,
@@ -109,7 +102,6 @@ rule "Limit to one email per day"
 end
 
 rule "Never resend same email"
-
   when
      scheduling : EmailScheduling( !blocked )
      subscriber : Subscriber( this == scheduling.sending.subscriber,
