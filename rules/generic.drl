@@ -1,4 +1,5 @@
 package com.strumenta.funnellang
+dialect "java"
 
 import com.strumenta.funnel.Email;
 import com.strumenta.funnel.EmailSequence;
@@ -20,7 +21,6 @@ global LocalDate day;
 // Rules regarding a certain sequence
 // Rules for emails that have to be sent within a certain date
 
-dialect "java"
 rule "Continue sequence"
 
    when
@@ -31,7 +31,6 @@ rule "Continue sequence"
       scheduler.schedule(sequence.getFirst(), subscriber, day, 4.0f, true);
 end
 
-dialect "java"
 rule "Start sequence"
 
    when
@@ -42,7 +41,6 @@ rule "Start sequence"
       scheduler.schedule(sequence.getFirst(), subscriber, day, 2.0f);
 end
 
-dialect "java"
 rule "Prevent overloading"
 
    when
@@ -53,7 +51,6 @@ rule "Prevent overloading"
       scheduler.block(scheduling);
 end
 
-dialect "java"
 rule "Block on holidays"
 
    when
@@ -64,7 +61,6 @@ rule "Block on holidays"
       scheduler.block(scheduling);
 end
 
-dialect "java"
 rule "Precedence to time sensitive emails"
 
    when
@@ -79,7 +75,6 @@ rule "Precedence to time sensitive emails"
       scheduler.block(scheduling2);
 end
 
-dialect "java"
 rule "Precedence to higher priority emails"
 
   when
@@ -96,7 +91,6 @@ rule "Precedence to higher priority emails"
       scheduler.block(scheduling2);
 end
 
-dialect "java"
 rule "Limit to one email per day"
 
   when
@@ -114,7 +108,6 @@ rule "Limit to one email per day"
       scheduler.block(scheduling2);
 end
 
-dialect "java"
 rule "Never resend same email"
 
   when

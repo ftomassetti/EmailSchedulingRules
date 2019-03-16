@@ -35,7 +35,7 @@ data class Subscriber(val name: String,
         return date.dayOfWeek == DayOfWeek.SATURDAY
                 || date.dayOfWeek == DayOfWeek.SUNDAY
     }
-    
+
     fun emailReceivedWithTag(tag: String) =
             emailsReceived.count { tag in it.email.tags }
 }
