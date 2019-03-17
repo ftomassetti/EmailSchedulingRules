@@ -38,7 +38,9 @@ private fun readKnowledgeBase(files: List<File>): KnowledgeBase {
 
 fun main(args: Array<String>) {
     try {
-        val kbase = readKnowledgeBase(listOf(File("rules/generic.drl")))
+        val kbase = readKnowledgeBase(listOf(
+                File("rules/generic.drl"),
+                File("rules/book.drl")))
         val ksession = kbase.newStatefulKnowledgeSession()
         // typically we want to consider today but we may decide to schedule
         // emails in the future or we may want to run tests using a different date

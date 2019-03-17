@@ -2,6 +2,7 @@ package com.strumenta.funnel
 
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.util.*
 
 data class Product(val name: String,
                    val price: Float)
@@ -16,7 +17,7 @@ data class Subscriber(val name: String,
                       val email: String = "$name@foo.com",
                       val tags: List<String> = emptyList(),
                       val purchases: List<Purchase> = emptyList(),
-                      val emailsReceived: List<EmailSending> = emptyList()) {
+                      val emailsReceived: MutableList<EmailSending> = LinkedList()) {
 
     val actualEmailsReceived
             get() = emailsReceived.map { it.email }
@@ -65,7 +66,19 @@ data class EmailSequence(val title: String,
 
 data class EmailSending(val email: Email,
                         val subscriber: Subscriber,
-                        val date: LocalDate)
+                        val date: LocalDate) {
+    override fun equals(other: Any?): Boolean {
+        return if (other is EmailSending) {
+            this.email === other.email && this.subscriber === other.subscriber && this.date == other.date
+        } else {
+            false
+        }
+    }
+
+    override fun hashCode(): Int {
+        return this.email.title.hashCode() * 7 + this.subscriber.name.hashCode() * 3 + this.date.hashCode()
+    }
+}
 
 data class EmailScheduling(val sending: EmailSending,
                            val importance: Double,
