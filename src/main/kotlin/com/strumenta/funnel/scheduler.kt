@@ -6,9 +6,12 @@ import java.time.LocalDate
 class EmailScheduler(val ksession: StatefulKnowledgeSession) {
 
     @JvmOverloads
-    fun schedule(email: Email, subscriber: Subscriber, date: LocalDate, importance: Double,
+    fun schedule(email: Email, subscriber: Subscriber,
+                 date: LocalDate, importance: Double,
                  timeSensitive: Boolean = false) {
-        val scheduling = EmailScheduling(EmailSending(email, subscriber, date), importance, timeSensitive)
+        val scheduling = EmailScheduling(
+                EmailSending(email, subscriber, date),
+                importance, timeSensitive)
         ksession.insert(scheduling)
         println("Scheduling ${email.title} for ${subscriber.name}")
     }
