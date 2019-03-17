@@ -130,5 +130,5 @@ class GenericRulesTest {
 
         assertEquals(0, schedulings.size)
     }
-    
+
 }
