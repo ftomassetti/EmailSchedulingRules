@@ -43,7 +43,7 @@ class GenericRulesTest {
     }
 
     fun loadDataIntoSession(ksession: StatefulKnowledgeSession,
-                            dayToConsider: LocalDate, dataTransformer: ((Subscriber, Email) -> Unit)? = null )
+                            dayToConsider: LocalDate, dataTransformer: ((Subscriber, Email) -> Unit)? = null)
             : EmailScheduler {
 
         val amelie = Subscriber("Amelie",
@@ -99,32 +99,36 @@ class GenericRulesTest {
         return emailScheduler
     }
 
-    @test fun startSequencePositiveCase() {
-        val kbase = prepareKnowledgeBase(listOf(File("rules/generic.drl")), listOf("Start sequence"))
+    private fun setupSessionAndFireRules(dayToConsider: LocalDate, rulesToKeep: List<String>,
+                                         dataTransformer: ((Subscriber, Email) -> Unit)? = null) : List<EmailScheduling> {
+        val kbase = prepareKnowledgeBase(listOf(File("rules/generic.drl")), rulesToKeep)
         val ksession = kbase.newStatefulKnowledgeSession()
-        val dayToConsider = LocalDate.of(2019, Month.MARCH, 17)
-        val emailScheduler = loadDataIntoSession(ksession, dayToConsider)
+        val emailScheduler = loadDataIntoSession(ksession, dayToConsider, dataTransformer)
 
         ksession.fireAllRules()
 
-        val schedulings = emailScheduler.selectScheduling(dayToConsider)
+        return emailScheduler.selectScheduling(dayToConsider)
+    }
+
+    @test fun startSequencePositiveCase() {
+        val schedulings = setupSessionAndFireRules(
+                LocalDate.of(2019, Month.MARCH, 17), listOf("Start sequence"))
         assertEquals(1, schedulings.size)
-        assertNotNull(schedulings.find { it.sending.email.title == "Present book 1" && it.sending.subscriber.name == "Amelie" })
+        assertNotNull(schedulings.find {
+            it.sending.email.title == "Present book 1"
+                    && it.sending.subscriber.name == "Amelie" })
     }
 
     @test fun startSequenceWhenFirstEmailReceived() {
-        val kbase = prepareKnowledgeBase(listOf(File("rules/generic.drl")), listOf("Start sequence"))
-        val ksession = kbase.newStatefulKnowledgeSession()
-        val dayToConsider = LocalDate.of(2019, Month.MARCH, 17)
-        val emailScheduler = loadDataIntoSession(ksession, dayToConsider) { amelie, bookSeqEmail1 ->
-            amelie.emailsReceived.add(EmailSending(bookSeqEmail1, amelie, LocalDate.of(2018, Month.NOVEMBER, 12)))
+        val schedulings = setupSessionAndFireRules(
+                LocalDate.of(2019, Month.MARCH, 17),
+                listOf("Start sequence")) { amelie, bookSeqEmail1 ->
+            amelie.emailsReceived.add(
+                    EmailSending(bookSeqEmail1, amelie,
+                            LocalDate.of(2018, Month.NOVEMBER, 12)))
         }
 
-        ksession.fireAllRules()
-
-        val schedulings = emailScheduler.selectScheduling(dayToConsider)
         assertEquals(0, schedulings.size)
     }
-
-
+    
 }
