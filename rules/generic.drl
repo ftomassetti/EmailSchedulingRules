@@ -11,23 +11,15 @@ import java.time.LocalDate;
 global EmailScheduler scheduler;
 global LocalDate day;
 
-// Rules:
-// Send certain emails only after sending x emails with interesting stuff
-// Send certain emails on certain week days
-// Send certain emails with certain interval
-// Never re-send the same email
-// Do not send certain emails to people who bought something
-// Send certain emails to people who bought something
-// Rules regarding a certain sequence
-// Rules for emails that have to be sent within a certain date
-
 rule "Continue sequence"
    when
       sequence : EmailSequence ()
       subscriber : Subscriber ( isInSequence(sequence) )
 
    then
-      scheduler.schedule(sequence.getFirst(), subscriber, day, 4.0f, true);
+      scheduler.schedule(
+              sequence.next(subscriber.getActualEmailsReceived()),
+              subscriber, day, 4.0f, true);
 end
 
 rule "Start sequence"
@@ -41,7 +33,9 @@ end
 
 rule "Prevent overloading"
    when
-      scheduling : EmailScheduling( sending.subscriber.hasReceivedEmailsInLastDays(3, day), !blocked )
+      scheduling : EmailScheduling(
+            sending.subscriber.hasReceivedEmailsInLastDays(3, day),
+            !blocked )
 
    then
       System.out.println("[Prevent overloading]");

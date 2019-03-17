@@ -23,7 +23,8 @@ rule "Block book offers on monday"
    when
       scheduling : EmailScheduling(
         !blocked,
-        sending.date.dayOfWeek = DayOfWeek.MONDAY
+        sending.date.dayOfWeek = DayOfWeek.MONDAY,
+        sending.email.tags contains "book_offer"
       )
    then
         scheduling.setBlocked(true);

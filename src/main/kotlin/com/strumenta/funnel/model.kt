@@ -18,6 +18,9 @@ data class Subscriber(val name: String,
                       val purchases: List<Purchase> = emptyList(),
                       val emailsReceived: List<EmailSending> = emptyList()) {
 
+    val actualEmailsReceived
+            get() = emailsReceived.map { it.email }
+
     fun isInSequence(emailSequence: EmailSequence) =
             hasReceived(emailSequence.first)
                     && !hasReceived(emailSequence.last)
@@ -38,6 +41,7 @@ data class Subscriber(val name: String,
 
     fun emailReceivedWithTag(tag: String) =
             emailsReceived.count { tag in it.email.tags }
+
 }
 
 data class Email(val title: String,
@@ -54,6 +58,9 @@ data class EmailSequence(val title: String,
     init {
         require(emails.isNotEmpty())
     }
+
+    fun next(emailsReceived: List<Email>) =
+        emails.first { it !in emailsReceived }
 }
 
 data class EmailSending(val email: Email,
