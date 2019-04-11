@@ -1,10 +1,11 @@
 package com.strumenta.funnel
 
-import org.drools.KnowledgeBase
-import org.drools.KnowledgeBaseFactory
-import org.drools.builder.KnowledgeBuilderFactory
-import org.drools.builder.ResourceType
-import org.drools.io.ResourceFactory
+import org.drools.core.impl.InternalKnowledgeBase
+import org.drools.core.impl.KnowledgeBaseFactory
+import org.drools.core.impl.KnowledgeBaseImpl
+import org.kie.api.io.ResourceType
+import org.kie.internal.builder.KnowledgeBuilderFactory
+import org.kie.internal.io.ResourceFactory
 import java.io.File
 import java.time.LocalDate
 
@@ -16,7 +17,7 @@ fun showSending(emailScheduler: EmailScheduler) {
     }
 }
 
-private fun readKnowledgeBase(files: List<File>): KnowledgeBase {
+private fun readKnowledgeBase(files: List<File>): InternalKnowledgeBase {
     val kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder()
 
     files.forEach { kbuilder.add(ResourceFactory.newFileResource(it), ResourceType.DRL) }
@@ -31,7 +32,7 @@ private fun readKnowledgeBase(files: List<File>): KnowledgeBase {
     }
 
     val kbase = KnowledgeBaseFactory.newKnowledgeBase()
-    kbase.addKnowledgePackages(kbuilder.knowledgePackages)
+    kbase.addPackages(kbuilder.knowledgePackages)
 
     return kbase
 }
@@ -41,7 +42,7 @@ fun main(args: Array<String>) {
         val kbase = readKnowledgeBase(listOf(
                 File("rules/generic.drl"),
                 File("rules/book.drl")))
-        val ksession = kbase.newStatefulKnowledgeSession()
+        val ksession = kbase.newKieSession()
         // typically we want to consider today but we may decide to schedule
         // emails in the future or we may want to run tests using a different date
         val dayToConsider = LocalDate.now()

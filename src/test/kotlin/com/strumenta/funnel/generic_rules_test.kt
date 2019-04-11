@@ -1,11 +1,11 @@
 package com.strumenta.funnel
 
-import org.drools.KnowledgeBase
-import org.drools.KnowledgeBaseFactory
-import org.drools.builder.KnowledgeBuilderFactory
-import org.drools.builder.ResourceType
-import org.drools.io.ResourceFactory
-import org.drools.runtime.StatefulKnowledgeSession
+import org.drools.core.impl.InternalKnowledgeBase
+import org.drools.core.impl.KnowledgeBaseFactory
+import org.kie.api.io.ResourceType
+import org.kie.api.runtime.KieSession
+import org.kie.internal.builder.KnowledgeBuilderFactory
+import org.kie.internal.io.ResourceFactory
 import java.io.File
 import java.time.LocalDate
 import java.time.Month
@@ -15,7 +15,7 @@ import org.junit.Test as test
 
 class GenericRulesTest {
 
-    private fun prepareKnowledgeBase(files: List<File>, rulesToKeep: List<String>): KnowledgeBase {
+    private fun prepareKnowledgeBase(files: List<File>, rulesToKeep: List<String>): InternalKnowledgeBase {
         val kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder()
 
         files.forEach { kbuilder.add(ResourceFactory.newFileResource(it), ResourceType.DRL) }
@@ -30,8 +30,8 @@ class GenericRulesTest {
         }
 
         val kbase = KnowledgeBaseFactory.newKnowledgeBase()
-        kbase.addKnowledgePackages(kbuilder.knowledgePackages)
-        kbase.knowledgePackages.forEach { kp ->
+        kbase.addPackages(kbuilder.knowledgePackages)
+        kbase.kiePackages.forEach { kp ->
             kp.rules.forEach { r ->
                 if (r.name !in rulesToKeep) {
                     kbase.removeRule(kp.name, r.name)
@@ -42,7 +42,7 @@ class GenericRulesTest {
         return kbase
     }
 
-    fun loadDataIntoSession(ksession: StatefulKnowledgeSession,
+    fun loadDataIntoSession(ksession: KieSession,
                             dayToConsider: LocalDate, dataTransformer: ((Subscriber, Email) -> Unit)? = null)
             : EmailScheduler {
 
@@ -102,7 +102,7 @@ class GenericRulesTest {
     private fun setupSessionAndFireRules(dayToConsider: LocalDate, rulesToKeep: List<String>,
                                          dataTransformer: ((Subscriber, Email) -> Unit)? = null) : List<EmailScheduling> {
         val kbase = prepareKnowledgeBase(listOf(File("rules/generic.drl")), rulesToKeep)
-        val ksession = kbase.newStatefulKnowledgeSession()
+        val ksession = kbase.newKieSession()
         val emailScheduler = loadDataIntoSession(ksession, dayToConsider, dataTransformer)
 
         ksession.fireAllRules()

@@ -1,10 +1,10 @@
 package com.strumenta.funnel
 
-import org.drools.runtime.StatefulKnowledgeSession
+import org.kie.api.runtime.KieSession
 import java.time.LocalDate
 import java.time.Month
 
-fun loadDataIntoSession(ksession: StatefulKnowledgeSession,
+fun loadDataIntoSession(ksession: KieSession,
                         dayToConsider: LocalDate)
         : EmailScheduler {
     val products = listOf(

@@ -1,5 +1,5 @@
 buildscript {
-    ext.droolsVersion = "6.3.0.Final"
+    ext.droolsVersion = "7.20.0.Final"
 
     repositories {
         mavenCentral()
@@ -27,7 +27,8 @@ repositories {
 dependencies {
     compile "org.kie:kie-api:${droolsVersion}"
     compile "org.drools:drools-compiler:${droolsVersion}"
-    compile "org.drools:knowledge-api:${droolsVersion}"
+    compile "org.drools:drools-core:${droolsVersion}"
+    //compile "org.drools:knowledge-api:${droolsVersion}"
     compile "ch.qos.logback:logback-classic:1.1.+"
     compile "org.slf4j:slf4j-api:1.7.+"    
     implementation "org.jetbrains.kotlin:kotlin-stdlib"

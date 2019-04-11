@@ -1,9 +1,9 @@
 package com.strumenta.funnel
 
-import org.drools.runtime.StatefulKnowledgeSession
+import org.kie.api.runtime.KieSession
 import java.time.LocalDate
 
-class EmailScheduler(val ksession: StatefulKnowledgeSession) {
+class EmailScheduler(val ksession: KieSession) {
 
     @JvmOverloads
     fun schedule(email: Email, subscriber: Subscriber,
@@ -27,16 +27,5 @@ class EmailScheduler(val ksession: StatefulKnowledgeSession) {
         // should always be redone
         val schedulings = ksession.objects.filterIsInstance(EmailScheduling::class.java)
         return schedulings.filter { !it.blocked }
-//        val schedulingsByPerson = schedulings.groupBy { it.sending.subscriber }
-//        return schedulingsByPerson.keys.map {
-//            val possibleSchedulings = schedulingsByPerson[it]!!.filter { !it.blocked }
-//            if (possibleSchedulings.isEmpty()) {
-//                null
-//            } else if (possibleSchedulings.any { it.timeSensitive }) {
-//                possibleSchedulings.filter { !it.timeSensitive }.sortedBy { it.importance }.last()
-//            } else {
-//                possibleSchedulings.last()
-//            }
-//        }.toList().filterNotNull()
     }
 }
