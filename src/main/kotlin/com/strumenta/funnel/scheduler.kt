@@ -7,11 +7,11 @@ class EmailScheduler(val ksession: KieSession) {
 
     @JvmOverloads
     fun schedule(email: Email, subscriber: Subscriber,
-                 date: LocalDate, importance: Double,
+                 date: LocalDate, priority: Priority,
                  timeSensitive: Boolean = false) {
         val scheduling = EmailScheduling(
                 EmailSending(email, subscriber, date),
-                importance, timeSensitive)
+                priority, timeSensitive)
         ksession.insert(scheduling)
         println("Scheduling ${email.title} for ${subscriber.name}")
     }

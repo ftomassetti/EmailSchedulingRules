@@ -7,6 +7,7 @@ import com.strumenta.funnel.EmailScheduling
 import com.strumenta.funnel.EmailScheduler;
 import com.strumenta.funnel.Subscriber
 import java.time.LocalDate;
+import com.strumenta.funnel.Priority
 
 global EmailScheduler scheduler;
 global LocalDate day;
@@ -19,7 +20,7 @@ rule "Continue sequence"
    then
       scheduler.schedule(
               sequence.next(subscriber.getActualEmailsReceived()),
-              subscriber, day, 4.0f, true);
+              subscriber, day, Priority.IMPORTANT, true);
 end
 
 rule "Start sequence"
@@ -28,7 +29,7 @@ rule "Start sequence"
       subscriber : Subscriber ( !isInSequence(sequence) )
 
    then
-      scheduler.schedule(sequence.getFirst(), subscriber, day, 2.0f);
+      scheduler.schedule(sequence.getFirst(), subscriber, day, Priority.NORMAL);
 end
 
 rule "Prevent overloading"
@@ -72,7 +73,7 @@ rule "Precedence to higher priority emails"
                sending.subscriber == scheduling1.sending.subscriber,
                sending.date == scheduling1.sending.date,
                timeSensitive == scheduling1.timeSensitive,
-               importance < scheduling1.importance)
+               priority < scheduling1.priority)
 
    then
       System.out.println("[higher priority emails]");
@@ -87,7 +88,7 @@ rule "Limit to one email per day"
                sending.subscriber == scheduling1.sending.subscriber,
                sending.date == scheduling1.sending.date,
                timeSensitive == scheduling1.timeSensitive,
-               importance == scheduling1.importance,
+               priority == scheduling1.priority,
                id > scheduling1.id)
 
    then

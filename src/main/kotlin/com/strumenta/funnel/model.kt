@@ -4,6 +4,13 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.*
 
+enum class Priority {
+    TRIVIAL,
+    NORMAL,
+    IMPORTANT,
+    VITAL
+}
+
 data class Product(val name: String,
                    val price: Float)
 
@@ -81,7 +88,7 @@ data class EmailSending(val email: Email,
 }
 
 data class EmailScheduling(val sending: EmailSending,
-                           val importance: Double,
+                           val priority: Priority,
                            val timeSensitive: Boolean = false,
                            var blocked: Boolean = false) {
     val id = ++nextId
