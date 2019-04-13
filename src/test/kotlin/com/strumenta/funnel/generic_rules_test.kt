@@ -15,7 +15,7 @@ import org.junit.Test as test
 
 class GenericRulesTest {
 
-    private fun prepareKnowledgeBase(files: List<File>, rulesToKeep: List<String>): InternalKnowledgeBase {
+    private fun prepareKnowledgeBase(files: List<File>): InternalKnowledgeBase {
         val kbuilder = KnowledgeBuilderFactory.newKnowledgeBuilder()
 
         files.forEach { kbuilder.add(ResourceFactory.newFileResource(it), ResourceType.DRL) }
@@ -31,13 +31,6 @@ class GenericRulesTest {
 
         val kbase = KnowledgeBaseFactory.newKnowledgeBase()
         kbase.addPackages(kbuilder.knowledgePackages)
-        kbase.kiePackages.forEach { kp ->
-            kp.rules.forEach { r ->
-                if (r.name !in rulesToKeep) {
-                    kbase.removeRule(kp.name, r.name)
-                }
-            }
-        }
 
         return kbase
     }
@@ -101,11 +94,11 @@ class GenericRulesTest {
 
     private fun setupSessionAndFireRules(dayToConsider: LocalDate, rulesToKeep: List<String>,
                                          dataTransformer: ((Subscriber, Email) -> Unit)? = null) : List<EmailScheduling> {
-        val kbase = prepareKnowledgeBase(listOf(File("rules/generic.drl")), rulesToKeep)
+        val kbase = prepareKnowledgeBase(listOf(File("rules/generic.drl")))
         val ksession = kbase.newKieSession()
         val emailScheduler = loadDataIntoSession(ksession, dayToConsider, dataTransformer)
 
-        ksession.fireAllRules()
+        ksession.fireAllRules { match -> match.rule.name in rulesToKeep }
 
         return emailScheduler.selectScheduling(dayToConsider)
     }
