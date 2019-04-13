@@ -1,15 +1,13 @@
 package com.strumenta.funnellang
-dialect "java"
 
 import com.strumenta.funnel.Email;
 import com.strumenta.funnel.EmailSequence;
 import com.strumenta.funnel.EmailScheduling
-import com.strumenta.funnel.EmailScheduler;
+import com.strumenta.funnel.EmailSending;
 import com.strumenta.funnel.Subscriber
 import java.time.LocalDate;
 import com.strumenta.funnel.Priority
 
-global EmailScheduler scheduler;
 global LocalDate day;
 
 rule "Continue sequence"
@@ -18,9 +16,9 @@ rule "Continue sequence"
       subscriber : Subscriber ( isInSequence(sequence) )
 
    then
-      scheduler.schedule(
-              sequence.next(subscriber.getActualEmailsReceived()),
-              subscriber, day, Priority.IMPORTANT, true);
+      EmailSending $sending = new EmailSending(sequence.next(subscriber.getActualEmailsReceived()), subscriber, day);
+      EmailScheduling $scheduling = new EmailScheduling($sending, Priority.IMPORTANT, true);
+      insert($scheduling);
 end
 
 rule "Start sequence"
@@ -29,7 +27,9 @@ rule "Start sequence"
       subscriber : Subscriber ( !isInSequence(sequence) )
 
    then
-      scheduler.schedule(sequence.getFirst(), subscriber, day, Priority.NORMAL);
+      EmailSending $sending = new EmailSending(sequence.getFirst(), subscriber, day);
+      EmailScheduling $scheduling = new EmailScheduling($sending, Priority.NORMAL);
+      insert($scheduling);
 end
 
 rule "Prevent overloading"
@@ -39,8 +39,7 @@ rule "Prevent overloading"
             !blocked )
 
    then
-      System.out.println("[Prevent overloading]");
-      scheduler.block(scheduling);
+      scheduling.setBlocked(true);
 end
 
 rule "Block on holidays"
@@ -48,8 +47,7 @@ rule "Block on holidays"
       scheduling : EmailScheduling( sending.subscriber.isOnHolidays(scheduling.sending.date), !blocked )
 
    then
-      System.out.println("[Block on holidays]");
-      scheduler.block(scheduling);
+      scheduling.setBlocked(true);
 end
 
 rule "Precedence to time sensitive emails"
@@ -61,8 +59,7 @@ rule "Precedence to time sensitive emails"
                 sending.date == scheduling1.sending.date,
                 timeSensitive == false)
    then
-      System.out.println("[time sensitive emails]");
-      scheduler.block(scheduling2);
+      scheduling2.setBlocked(true);
 end
 
 rule "Precedence to higher priority emails"
@@ -76,8 +73,7 @@ rule "Precedence to higher priority emails"
                priority < scheduling1.priority)
 
    then
-      System.out.println("[higher priority emails]");
-      scheduler.block(scheduling2);
+      scheduling2.setBlocked(true);
 end
 
 rule "Limit to one email per day"
@@ -92,8 +88,7 @@ rule "Limit to one email per day"
                id > scheduling1.id)
 
    then
-      System.out.println("[Limit to one email per day]");
-      scheduler.block(scheduling2);
+      scheduling2.setBlocked(true);
 end
 
 rule "Never resend same email"

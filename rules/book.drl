@@ -1,5 +1,4 @@
 package com.strumenta.funnellang
-dialect "java"
 
 import com.strumenta.funnel.Subscriber;
 import com.strumenta.funnel.EmailScheduling;

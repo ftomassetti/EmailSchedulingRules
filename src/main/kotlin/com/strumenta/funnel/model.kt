@@ -87,7 +87,7 @@ data class EmailSending(val email: Email,
     }
 }
 
-data class EmailScheduling(val sending: EmailSending,
+data class EmailScheduling @JvmOverloads constructor(val sending: EmailSending,
                            val priority: Priority,
                            val timeSensitive: Boolean = false,
                            var blocked: Boolean = false) {

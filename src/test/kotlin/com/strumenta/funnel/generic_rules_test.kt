@@ -36,8 +36,7 @@ class GenericRulesTest {
     }
 
     fun loadDataIntoSession(ksession: KieSession,
-                            dayToConsider: LocalDate, dataTransformer: ((Subscriber, Email) -> Unit)? = null)
-            : EmailScheduler {
+                            dayToConsider: LocalDate, dataTransformer: ((Subscriber, Email) -> Unit)? = null) {
 
         val amelie = Subscriber("Amelie",
                 LocalDate.of(2019, Month.FEBRUARY, 1),
@@ -78,8 +77,6 @@ class GenericRulesTest {
                 "I offer consulting...",
                 tags= listOf("consulting_offer")))
 
-        val emailScheduler = EmailScheduler(ksession)
-        ksession.setGlobal("scheduler", emailScheduler)
         ksession.setGlobal("day", dayToConsider)
 
         ksession.insert(products)
@@ -89,18 +86,17 @@ class GenericRulesTest {
         sequences.forEach {
             ksession.insert(it)
         }
-        return emailScheduler
     }
 
     private fun setupSessionAndFireRules(dayToConsider: LocalDate, rulesToKeep: List<String>,
                                          dataTransformer: ((Subscriber, Email) -> Unit)? = null) : List<EmailScheduling> {
         val kbase = prepareKnowledgeBase(listOf(File("rules/generic.drl")))
         val ksession = kbase.newKieSession()
-        val emailScheduler = loadDataIntoSession(ksession, dayToConsider, dataTransformer)
+        loadDataIntoSession(ksession, dayToConsider, dataTransformer)
 
         ksession.fireAllRules { match -> match.rule.name in rulesToKeep }
 
-        return emailScheduler.selectScheduling(dayToConsider)
+        return ksession.selectScheduling(dayToConsider)
     }
 
     @test fun startSequencePositiveCase() {

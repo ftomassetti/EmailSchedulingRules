@@ -5,8 +5,7 @@ import java.time.LocalDate
 import java.time.Month
 
 fun loadDataIntoSession(ksession: KieSession,
-                        dayToConsider: LocalDate)
-        : EmailScheduler {
+                        dayToConsider: LocalDate) {
     val products = listOf(
             Product("My book", 20.0f),
             Product("Video course", 100.0f),
@@ -63,8 +62,6 @@ fun loadDataIntoSession(ksession: KieSession,
             "I offer consulting...",
             tags= listOf("consulting_offer")))
 
-    val emailScheduler = EmailScheduler(ksession)
-    ksession.setGlobal("scheduler", emailScheduler)
     ksession.setGlobal("day", dayToConsider)
 
     ksession.insert(products)
@@ -74,5 +71,4 @@ fun loadDataIntoSession(ksession: KieSession,
     sequences.forEach {
         ksession.insert(it)
     }
-    return emailScheduler
 }

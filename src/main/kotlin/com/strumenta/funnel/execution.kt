@@ -3,15 +3,16 @@ package com.strumenta.funnel
 import org.drools.core.impl.InternalKnowledgeBase
 import org.drools.core.impl.KnowledgeBaseFactory
 import org.kie.api.io.ResourceType
+import org.kie.api.runtime.KieSession
 import org.kie.internal.builder.KnowledgeBuilderFactory
 import org.kie.internal.io.ResourceFactory
 import java.io.File
 import java.time.LocalDate
 
 
-fun showSending(emailScheduler: EmailScheduler) {
+fun showSending(kieSession: KieSession) {
     println("Showing email scheduling")
-    emailScheduler.selectScheduling(LocalDate.now()).forEach {
+    kieSession.selectScheduling(LocalDate.now()).forEach {
         println(it)
     }
 }
@@ -36,6 +37,14 @@ private fun readKnowledgeBase(files: List<File>): InternalKnowledgeBase {
     return kbase
 }
 
+fun KieSession.selectScheduling(localDate: LocalDate): List<EmailScheduling> {
+    // We select all the scheduling that were not blocked and at most one for each subscriber per day
+    // We do that just for the day considered (typically today) as things could change, so the scheduling
+    // should always be redone
+    val schedulings = this.objects.filterIsInstance(EmailScheduling::class.java)
+    return schedulings.filter { !it.blocked }
+}
+
 fun main(args: Array<String>) {
     try {
         val kbase = readKnowledgeBase(listOf(
@@ -45,11 +54,11 @@ fun main(args: Array<String>) {
         // typically we want to consider today but we may decide to schedule
         // emails in the future or we may want to run tests using a different date
         val dayToConsider = LocalDate.now()
-        val emailScheduler = loadDataIntoSession(ksession, dayToConsider)
+        loadDataIntoSession(ksession, dayToConsider)
 
         ksession.fireAllRules()
 
-        showSending(emailScheduler)
+        showSending(ksession)
     } catch (t: Throwable) {
         t.printStackTrace()
     }
