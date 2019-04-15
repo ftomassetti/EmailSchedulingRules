@@ -14,7 +14,7 @@ apply plugin: 'java'
 apply plugin: 'idea'
 
 group 'com.strumenta'
-version '0.1.0-SNAPSHOT'
+version '0.1.1-SNAPSHOT'
 
 repositories {
     mavenLocal()
@@ -28,7 +28,6 @@ dependencies {
     compile "org.kie:kie-api:${droolsVersion}"
     compile "org.drools:drools-compiler:${droolsVersion}"
     compile "org.drools:drools-core:${droolsVersion}"
-    //compile "org.drools:knowledge-api:${droolsVersion}"
     compile "ch.qos.logback:logback-classic:1.1.+"
     compile "org.slf4j:slf4j-api:1.7.+"    
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
